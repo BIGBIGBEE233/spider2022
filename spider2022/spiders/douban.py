@@ -24,6 +24,8 @@ class DoubanSpider(scrapy.Spider):
         # 使用响应直接解析
         list_items = response.css('#content > div > div.article > ol > li')
         for item in list_items:
+            # 影片详情链接
+            movie_detail_url=item.css('div.info > div.hd > a::attr(href)').extract_first()
             movie_item = MovieItem()
             movie_item['title'] = item.css('span.title::text').extract_first()
             movie_item['score'] = item.css('span.rating_num::text').extract_first()

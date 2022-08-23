@@ -3,10 +3,28 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-from scrapy import signals
+from scrapy import signals, Request
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
+
+
+def get_cookies_dict():
+    cookies_str='ll="118172"; bid=9yb-IipSeL8; _vwo_uuid_v2=D31BAF4D66CAF21906DCD8C155DCABAA6|97ab260c5c6919ca4b9f816d18d619c2; ' \
+                'dbcl2="196131712:cCLMJ0fUp/8"; push_noty_num=0; push_doumail_num=0; __utmv=30149280.19613; ck=Oqva; ' \
+                '_pk_ref.100001.4cf6=["","",1661234951,"https://www.baidu.com/link?url=ZkSt79nbituchOeBnXfhFzPcyUJ5MGW5dzzqoIUhHgoq2cencOfa3abvH2mzQjhC&wd=&eqid=8b4c2b90000059e60000000463046f05"]; ' \
+                '_pk_ses.100001.4cf6=*; ap_v=0,6.0; __utma=30149280.410908641.1661224688.1661224688.1661234951.2; __utmc=30149280; ' \
+                '__utmz=30149280.1661234951.2.2.utmcsr=baidu|utmccn=(organic)|utmcmd=organic; __utma=223695111.1793194.1661224688.1661224688.1661234951.2; ' \
+                '__utmb=223695111.0.10.1661234951; __utmc=223695111; __utmz=223695111.1661234951.2.2.utmcsr=baidu|utmccn=(organic)|utmcmd=organic; __utmt=1; ' \
+                '__utmb=30149280.18.10.1661234951; _pk_id.100001.4cf6=d3b10dab4a1ba80b.1661224687.2.1661235080.1661224788.'
+    cookies_dict={}
+    for item in cookies_str.split(';'):
+        key,value=item.split('=',maxsplit=1)
+        cookies_dict[key]=value
+
+    return cookies_dict
+
+COOKIES_DICT=get_cookies_dict()
 
 
 class Spider2022SpiderMiddleware:
@@ -68,7 +86,7 @@ class Spider2022DownloaderMiddleware:
         crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
         return s
 
-    def process_request(self, request, spider):
+    def process_request(self, request : Request, spider):
         # Called for each request that goes through the downloader
         # middleware.
 
@@ -78,6 +96,7 @@ class Spider2022DownloaderMiddleware:
         # - or return a Request object
         # - or raise IgnoreRequest: process_exception() methods of
         #   installed downloader middleware will be called
+        request.cookies=COOKIES_DICT
         return None
 
     def process_response(self, request, response, spider):

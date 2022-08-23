@@ -14,7 +14,7 @@ class DbPipeline:
         self.conn = pymysql.connect(host='localhost', port=3306, user='root', password='lxLR0227',
                                     database='spider_db', charset='utf8mb4')
         self.cursor = self.conn.cursor()
-        self.data=[]
+        self.data = []
 
     def process_item(self, item, spider):
         title = item.get('title', '')
@@ -28,8 +28,8 @@ class DbPipeline:
         # )
 
         # 数据批量写入数据库
-        self.data.append((title,score,subject))
-        if len(self.data)==50:
+        self.data.append((title, score, subject))
+        if len(self.data) == 50:
             self._write_data_to_db()
             self.data.clear()
 
@@ -43,10 +43,9 @@ class DbPipeline:
         self.conn.commit()
 
     def close_spider(self, spider):
-        if len(self.data)>0:
+        if len(self.data) > 0:
             self._write_data_to_db()
         self.conn.close()
-
 
 
 class Spider2022Pipeline:
