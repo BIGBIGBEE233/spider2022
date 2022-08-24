@@ -1,3 +1,5 @@
+import re
+
 import scrapy
 from scrapy import Selector
 from scrapy.http import HtmlResponse
@@ -25,12 +27,13 @@ class DoubanSpider(scrapy.Spider):
         list_items = response.css('#content > div > div.article > ol > li')
         for item in list_items:
             # 影片详情链接
-            movie_detail_url=item.css('div.info > div.hd > a::attr(href)').extract_first()
+            movie_detail_url = item.css('div.info > div.hd > a::attr(href)').extract_first()
+            print(movie_detail_url)
             movie_item = MovieItem()
             movie_item['title'] = item.css('span.title::text').extract_first()
             movie_item['score'] = item.css('span.rating_num::text').extract_first()
             movie_item['subject'] = item.css('span.inq::text').extract_first()
-            yield movie_item
+            yield scrapy.Request(url=movie_detail_url, callback=self.parse_detail, cb_kwargs={'item': movie_item})
 
         # 如何抓取多页数据
 
@@ -50,3 +53,13 @@ class DoubanSpider(scrapy.Spider):
         url = response.urljoin(url=next_link)
         print(url)
         yield scrapy.Request(url=url, callback=self.parse)
+
+    #
+    def parse_detail(self, response, **kwargs):
+        movie_item = kwargs['item']
+        sel = Selector(response)
+        movie_item['duration'] = sel.css('span[property="v:runtime"]::text').extract_first()
+        # intro_text = sel.css('span[property="v:summary"]::text').extract_first()
+        # intro = re.sub('[\/:*?"<>|\n\t\r]', intro_text)
+        # movie_item['intro'] = intro
+        yield movie_item

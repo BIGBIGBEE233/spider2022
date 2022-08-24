@@ -13,3 +13,5 @@ class MovieItem(scrapy.Item):
     title = scrapy.Field()
     score = scrapy.Field()
     subject = scrapy.Field()
+    duration = scrapy.Field()
+    # intro = scrapy.Field()
