@@ -21,7 +21,7 @@ class DbPipeline:
         score = item.get('score', '')
         subject = item.get('subject', '')
         duration = item.get('duration', '')
-        # intro = item.get('intro', '')
+        intro = item.get('intro', '')
 
         # 每次获取到数据立即写入
         # self.cursor.execute(
@@ -30,7 +30,7 @@ class DbPipeline:
         # )
 
         # 数据批量写入数据库
-        self.data.append((title, score, subject, duration))
+        self.data.append((title, score, subject, duration, intro))
         if len(self.data) == 50:
             self._write_data_to_db()
             self.data.clear()
@@ -39,7 +39,7 @@ class DbPipeline:
 
     def _write_data_to_db(self):
         self.cursor.executemany(
-            'insert into douban_movie_top250 (movie_title,movie_score,movie_subject,movie_duration) values (%s,%s,%s,%s)',
+            'insert into douban_movie_top250 (movie_title,movie_score,movie_subject,movie_duration,movie_intro) values (%s,%s,%s,%s,%s)',
             self.data)
         self.conn.commit()
 
@@ -55,7 +55,7 @@ class Spider2022Pipeline:
         self.workbook = openpyxl.Workbook()
         self.worksheet = self.workbook.active
         self.worksheet.title = 'Top250'
-        self.worksheet.append(('title', 'score', 'subject', 'duration'))
+        self.worksheet.append(('title', 'score', 'subject', 'duration', 'intro'))
 
     def open_spider(self, spider):
         pass
@@ -65,8 +65,8 @@ class Spider2022Pipeline:
         score = item.get('score', '')
         subject = item.get('subject', '')
         duration = item.get('duration', '')
-        # intro = item.get('intro', '')
-        self.worksheet.append((title, score, subject, duration))
+        intro = item.get('intro', '')
+        self.worksheet.append((title, score, subject, duration, intro))
         return item
 
     def close_spider(self, spider):

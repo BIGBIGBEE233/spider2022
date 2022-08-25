@@ -10,13 +10,14 @@ from spider2022.items import MovieItem
 class DoubanSpider(scrapy.Spider):
     name = 'douban'
     allowed_domains = ['movie.douban.com']
+
     # spider定义一个初始请求URL，后续链接通过解析响应获取
-    start_urls = ['https://movie.douban.com/top250']
+    # start_urls = ['https://movie.douban.com/top250']
 
     # 提前构造好全部请求链接，交给scheduler 调度
-    # def start_requests(self):
-    #     for page in range(10):
-    #         yield scrapy.Request(url=f'https://movie.douban.com/top250?start={page*25}&filter=')
+    def start_requests(self):
+        for page in range(3):
+            yield scrapy.Request(url=f'https://movie.douban.com/top250?start={page * 25}&filter=')
 
     def parse(self, response: HtmlResponse, **kwargs):
         # 使用选择器解析
@@ -49,17 +50,19 @@ class DoubanSpider(scrapy.Spider):
 
         # 方法2：通过获取下一页按钮href属性值，每次只获取一个下页数据链接,scrapy.Response构造请求，爬取下页数据，直至所有页数据抓取完毕
 
-        next_link = response.css('div.article > div.paginator > span.next > a::attr(href)').extract_first()
-        url = response.urljoin(url=next_link)
-        print(url)
-        yield scrapy.Request(url=url, callback=self.parse)
+        # next_link = response.css('div.article > div.paginator > span.next > a::attr(href)').extract_first()
+        # url = response.urljoin(url=next_link)
+        # print(url)
+        # yield scrapy.Request(url=url, callback=self.parse)
 
     #
     def parse_detail(self, response, **kwargs):
         movie_item = kwargs['item']
         sel = Selector(response)
         movie_item['duration'] = sel.css('span[property="v:runtime"]::text').extract_first()
-        # intro_text = sel.css('span[property="v:summary"]::text').extract_first()
-        # intro = re.sub('[\/:*?"<>|\n\t\r]', intro_text)
-        # movie_item['intro'] = intro
+        intro_text = sel.css('span[property="v:summary"]::text').extract_first() or ''
+        # print(intro_text)
+        if intro_text:
+            intro_text = re.sub('[\/:*?"<>|\n\t\r]', '', intro_text).strip()
+        movie_item['intro'] = intro_text
         yield movie_item
